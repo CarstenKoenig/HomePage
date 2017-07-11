@@ -16,6 +16,9 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Application
+                     , Database
+                     , Database.Model
+                     , EventSourcing
                      , EventSourcing.Events
                      , EventSourcing.EventStore
                      , EventSourcing.Projections
@@ -24,13 +27,20 @@ library
                      , Views.Layout
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , bytestring
+                     , containers
                      , data-default
                      , free
                      , lucid
+                     , monad-logger
+                     , persistent
+                     , persistent-template
+                     , resourcet
                      , servant-lucid
                      , servant-server
                      , text
                      , time
+                     , transformers
                      , wai
                      , warp
   default-language:    Haskell2010
@@ -41,6 +51,10 @@ executable HomePage-exe
   ghc-options:         -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , HomePage
+                     , aeson
+                     , text
+                     , persistent
+                     , persistent-sqlite
   default-language:    Haskell2010
 
 test-suite HomePage-test

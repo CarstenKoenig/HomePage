@@ -3,6 +3,7 @@
 
 module EventSourcing.EventStore
   ( EventStream
+  , EventStreamF (..)
   , LowerBound (..)
   , newAggregate, addEvent, project, getEvents
   ) where

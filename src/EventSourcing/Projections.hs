@@ -1,6 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
 module EventSourcing.Projections
-  ( Projection
+  ( Projection(..)
   , AggregateKey
   , Metadata (..)
   , projectEvents
