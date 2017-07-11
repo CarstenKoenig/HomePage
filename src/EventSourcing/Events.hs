@@ -1,9 +1,12 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE ExistentialQuantification, FlexibleInstances #-}
 module EventSourcing.Events
   ( AggregateKey
   , Metadata (..)
   , Event (..)
+  , Embedding (..)
+  , embeddEvent, extractEvent
   )
 where
 
@@ -38,3 +41,20 @@ instance Traversable Event where
     let wrap x = Event x (metadata ev)
     in fmap wrap (map $ content ev)
     
+
+class Embedding sup sub where
+  embed :: sub -> sup
+  extract :: sup -> Maybe sub
+
+
+instance Embedding a a where
+  embed = id
+  extract = Just . id
+
+
+embeddEvent :: Embedding sup sub => Event sub -> Event sup
+embeddEvent = fmap embed
+
+
+extractEvent :: Embedding sup sub => Event sup -> Maybe (Event sub)
+extractEvent = traverse extract

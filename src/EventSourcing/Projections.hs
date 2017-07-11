@@ -18,7 +18,7 @@ import Data.Int (Int64)
 import Data.Maybe (catMaybes)
 import Data.Time (UTCTime)
 
-import EventSourcing.Events (AggregateKey, Metadata(..), Event(..))
+import EventSourcing.Events (Embedding(extract), AggregateKey, Metadata(..), Event(..))
 
 
 data Projection ev a =
@@ -84,10 +84,10 @@ lastEventnumberP :: Projection ev (Maybe Int64)
 lastEventnumberP = fmap eventNumber <$> lastMetadataP
 
 
-liftP :: (ev1 -> Maybe ev0) -> Projection ev0 r -> Projection ev1 r
-liftP proj (Projection init0 fold0 final0) =
+liftP :: Embedding ev1 ev0 => Projection ev0 r -> Projection ev1 r
+liftP (Projection init0 fold0 final0) =
   let fold1 state ev1 =
-        case traverse proj ev1 of
+        case traverse extract ev1 of
           Just ev0 -> fold0 state ev0
           Nothing  -> state
   in Projection init0 fold1 final0

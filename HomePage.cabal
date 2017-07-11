@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Application
                      , EventSourcing.Events
+                     , EventSourcing.EventStore
                      , EventSourcing.Projections
                      , Views.AboutMe
                      , Views.Index
@@ -24,6 +25,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , data-default
+                     , free
                      , lucid
                      , servant-lucid
                      , servant-server
