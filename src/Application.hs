@@ -14,9 +14,12 @@ import Network.Wai.Handler.Warp
 
 import Servant
 import Servant.HTML.Lucid (HTML)
+import Servant.Utils.StaticFiles (serveDirectory)
 
 import Lucid (Html)
 
+import Views.Layout (Page, withLayout)
+import Views.AboutMe
 import Views.Index
 
 data User = User
@@ -29,6 +32,7 @@ $(deriveJSON defaultOptions ''User)
 
 type API
   = "users" :> Get '[JSON] [User]
+  :<|> "static" :> Raw
   :<|> Get '[HTML] (Html ())
 
 
@@ -43,7 +47,10 @@ api = Proxy
 
 
 server :: Server API
-server = return users :<|> return Views.Index.page
+server =
+  return users
+  :<|> serveDirectory "static"
+  :<|> return (withLayout Views.AboutMe.page)
 
 
 users :: [User]

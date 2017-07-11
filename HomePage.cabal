@@ -16,9 +16,12 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Application
+                     , Views.AboutMe
                      , Views.Index
+                     , Views.Layout
   build-depends:       base >= 4.7 && < 5
                      , aeson
+                     , data-default
                      , lucid
                      , servant-lucid
                      , servant-server
