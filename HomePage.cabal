@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Application
                      , Database
+                     , Database.EventSourcing
                      , Database.Model
                      , EventSourcing
                      , EventSourcing.Events
