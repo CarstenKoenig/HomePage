@@ -13,91 +13,104 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Application.Handler
-  ( AppHandler
-  , appHandlerToHandler
-  , addSessionFromContext
-  , addSessionFromContextToError
-  , AuthCookieSettings (..)
-  , AppContext (..)
-  , AuthSettings (..)
-  , BaseUri (..)
+  ( handlers
   ) where
 
-import Control.Monad.Catch (MonadThrow, try)
-import Control.Monad.Except
-import Control.Monad.Reader
-import Crypto.Cipher.AES (AES256)
-import Crypto.Cipher.Types (ctrCombine)
-import Crypto.Hash.Algorithms (SHA256)
-import Crypto.Random
-import Data.ByteString (ByteString)
-import Data.Serialize hiding (Get)
-import Data.Text (Text)
-import Lucid
-import Network.URI hiding (scheme)
-import Network.Wai
-import Network.Wai.Handler.Warp
+import           Control.Monad.Catch (MonadThrow, try)
+import           Control.Monad.Except
+import           Control.Monad.Reader
+import           Control.Monad.Trans.Except (throwE, catchE)
+
+import           Data.Serialize hiding (Get)
+import           Data.Text (Text)
+import qualified Data.Text          as T
+import qualified Data.Text.Encoding as T
+import           Data.Time (UTCTime, getCurrentTime)
+
+import Lucid (Html)
 import Servant
 import Servant.HTML.Lucid
 import Servant.Server.Experimental.Auth
 import Servant.Server.Experimental.Auth.Cookie
-import qualified Data.ByteString    as B
-import qualified Data.Text          as T
-import qualified Data.Text.Encoding as T
+
+import Application.HandlerMonad
+import Application.Routing
+import Application.Session (Session(..))
+
+import Views.Layout
+import Views.AboutMe
 
 
-
--- | The handler monad, to work with cookies we need to have access to
--- 'AuthCookieSettings', 'RandomSource', and 'ServerKey'. It's also a handy
--- place to put some values that will be useful for route rendering.
-
-type AppHandler = ReaderT AppContext (ExceptT ServantErr IO)
-
-
-appHandlerToHandler :: AppContext -> AppHandler :~> Handler
-appHandlerToHandler context =
-  Nat $ flip runReaderT context  
-
--- | The application's context.
--- includes settings for the session encryption
--- and values needed to render routes
-
-addSessionFromContext
-  :: (AddHeader e EncryptedSession s r, Serialize a,
-     MonadThrow m, MonadIO m)
-  => AppContext -> a -> s -> m r
-addSessionFromContext context =
-  addSession
-     (authCookieSettings $ appContextAuthSettings context)
-     (authRandomSource $ appContextAuthSettings context)
-     (authServerKey $ appContextAuthSettings context)
+handlers :: ServerT Pages AppHandler    
+handlers =
+  homeHandler
+  :<|> loginHandler
+  :<|> logoutHandler
 
 
-addSessionFromContextToError
-  :: (MonadIO m, MonadThrow m, Serialize a) =>
-     AppContext -> a -> ServantErr -> m ServantErr
-addSessionFromContextToError context =
-  addSessionToErr
-     (authCookieSettings $ appContextAuthSettings context)
-     (authRandomSource $ appContextAuthSettings context)
-     (authServerKey $ appContextAuthSettings context)
+homeHandler :: Maybe Session -> AppHandler (Html ())
+homeHandler =
+  showPageHandler Views.AboutMe.page
+  
 
 
-data AppContext = AppContext
-  { appContextAuthSettings :: AuthSettings
-  , appContextBaseUri      :: BaseUri
-  }
+loginHandler :: AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
+loginHandler = do
+  time <- liftIO getCurrentTime
+  let session = Session time
+  redirectHomeWithSession session
+  
 
 
-data AuthSettings = AuthSettings
-  { authCookieSettings :: AuthCookieSettings
-  , authRandomSource   :: RandomSource
-  , authServerKey      :: ServerKey
-  }
+-- | The “Sign Out” page sets cookies to empty byte string destroyng the data.
+
+logoutHandler
+  :: Maybe Session
+  -> AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
+logoutHandler ms =
+  withSession ms $ \_ -> redirectHomeWithSession ()
 
 
-data BaseUri = BaseUri
-  { baseUriRoot      :: String
-  , baseUriPort      :: Int
-  , baseUriScheme    :: String
-  }
+redirectHomeWithSession
+  :: (Serialize a)
+  => a -> AppHandler (Headers '[Header "set-cookie" EncryptedSession] ret)
+redirectHomeWithSession session = do
+  redirectContext <- ask
+  uri <- getHomeUri
+  redirect <- addSessionFromContextToError
+    redirectContext
+    session
+    (err303 { errHeaders = [("Location", uri)] })
+  lift $ throwE redirect
+  where getHomeUri = T.encodeUtf8 <$> routeToText (Proxy :: Proxy GetHomeR)
+  
+--------------------------------------------------------------------
+
+-- | Perform actions with 'Session' or return 403 HTTP status code.
+
+withSession
+  :: Maybe Session     -- ^ 'Session', if any
+  -> (Session -> AppHandler a) -- ^ Callback making use of 'Session'
+  -> AppHandler a
+withSession ms action = maybe (throwError err403) action ms
+
+
+-- | shows a page
+showPageHandler :: Page -> Maybe Session -> AppHandler (Html ())
+showPageHandler page session = do
+  context <- mkPageContext session
+  return (withLayout context page)
+
+
+-- | Create an 'PageContext' this is the recommended method to created it
+
+mkPageContext
+  :: Maybe s                    -- ^ Active 'Session' if any
+  -> AppHandler (PageContext s) -- ^ The resulting view
+mkPageContext session = do
+  homeLink   <- routeToText (Proxy :: Proxy GetHomeR)
+  loginLink  <- routeToText (Proxy :: Proxy GetLoginR)
+  logoutLink <- routeToText (Proxy :: Proxy GetLogoutR)
+  return PageContext {..}
+
+

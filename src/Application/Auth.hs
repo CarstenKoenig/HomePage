@@ -5,7 +5,6 @@
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE OverloadedStrings    #-}
-{-# LANGUAGE RecordWildCards      #-}
 {-# LANGUAGE ScopedTypeVariables  #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE TypeOperators        #-}
@@ -18,28 +17,13 @@ module Application.Auth
   ) where
 
 import Control.Monad.Catch (try)
-import Control.Monad.Except
-import Control.Monad.Reader
-import Crypto.Cipher.AES (AES256)
-import Crypto.Cipher.Types (ctrCombine)
-import Crypto.Hash.Algorithms (SHA256)
-import Crypto.Random
-import Data.ByteString (ByteString)
-import Data.Serialize hiding (Get)
-import Data.Text (Text)
-import Data.Time (UTCTime)
-import Data.Time.Clock.POSIX (utcTimeToPOSIXSeconds, posixSecondsToUTCTime)
-import Lucid
-import Network.URI hiding (scheme)
-import Network.Wai
-import Network.Wai.Handler.Warp
+import Control.Monad.Except (ExceptT)
+import Network.Wai (Request)
+
 import Servant
-import Servant.HTML.Lucid
 import Servant.Server.Experimental.Auth
 import Servant.Server.Experimental.Auth.Cookie
-import qualified Data.ByteString    as B
-import qualified Data.Text          as T
-import qualified Data.Text.Encoding as T
+
 
 import Application.Session
 

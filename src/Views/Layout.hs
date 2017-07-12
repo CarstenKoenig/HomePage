@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Views.Layout
   ( Page (..)
   , PageContext (..)
@@ -6,9 +6,10 @@ module Views.Layout
   ) where
 
 
-import Data.Default
-import Data.Maybe (fromMaybe)
-import Data.Text (Text)
+import           Data.Default
+import           Data.Maybe (fromMaybe)
+import           Data.Proxy (Proxy(..))
+import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 
@@ -19,7 +20,6 @@ import Lucid (Html, Attribute, toHtml, renderText)
 import qualified Lucid.Html5 as H
 import qualified Lucid.Bootstrap as BS
 
-import Application.Session
 
 data Page =
   Page { additionalStyles :: Maybe Text
@@ -28,16 +28,16 @@ data Page =
        }
 
 
-data PageContext =
+data PageContext s =
   PageContext
-  { session     :: Maybe Session
+  { session     :: Maybe s
   , homeLink    :: Text
   , loginLink   :: Text
   , logoutLink  :: Text
   }
 
 
-withLayout :: PageContext -> Page -> Html ()
+withLayout :: PageContext s -> Page -> Html ()
 withLayout context page = do
   H.doctype_ 
   H.html_ [ H.lang_ "de" ] $
@@ -90,12 +90,12 @@ withLayout context page = do
           T.empty
 
 
-nav :: PageContext -> Html ()
+nav :: PageContext s -> Html ()
 nav context =
   H.nav_ [ H.class_ "blog-nav" ] $
      forM_ (links context) navItem
 
-links :: PageContext -> [(Text, Text)]
+links :: PageContext s -> [(Text, Text)]
 links context =
   case session context of
     Nothing -> [ ("Home", homeLink context)

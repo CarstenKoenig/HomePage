@@ -52,7 +52,7 @@ main = do
 
 
 runInSqlite :: (ToJSON ev, FromJSON ev) => Text -> EventStream ev res -> IO res
-runInSqlite connection query = do
+runInSqlite connection query =
   runSqlite connection $ do
     runMigration migrateAll
     runStream query
