@@ -42,6 +42,7 @@ library
                      , containers
                      , cryptonite
                      , data-default
+                     , directory
                      , exceptions
                      , free
                      , http-api-data

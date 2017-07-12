@@ -16,7 +16,6 @@ import           Servant
 import           Servant.HTML.Lucid (HTML)
 import           Servant.Server.Experimental.Auth.Cookie (EncryptedSession, addSession)
 import           Servant.Utils.StaticFiles (serveDirectory)
-import           Web.Internal.FormUrlEncoded (FromForm(..), parseUnique)
 
 import           Lucid (Html)
 
@@ -25,7 +24,7 @@ import           Application.HandlerMonad (AppHandler)
 import           Application.Context
 import           Application.Session (Session(..))
 
-
+import           Utils.Passwords (Login)
 
 type Routes
   = "static" :> Raw
@@ -36,23 +35,10 @@ type Pages
   = GetHomeR
   :<|> GetLoginR
   :<|> GetLogoutR
-
+  
 
 type GetHomeR =
   AppAuth :> Get '[HTML] (Html ())
-
-
-data Login =
-  Login { user :: Text
-        , password :: Text
-        }
-  deriving (Show)
-
-
-instance FromForm Login where
-  --fromFormUrlEncoded :: [(Text, Text)] -> Either String CheckRequest
-  fromForm f =
-    Login <$> parseUnique "user" f <*> parseUnique "password" f
 
 
 type GetLoginR =

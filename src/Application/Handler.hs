@@ -27,6 +27,8 @@ import qualified Data.Text          as T
 import qualified Data.Text.Encoding as T
 import           Data.Time (UTCTime, getCurrentTime)
 
+import           System.Directory (doesFileExist)
+
 import Lucid (Html)
 import Servant
 import Servant.HTML.Lucid
@@ -39,6 +41,12 @@ import Application.Session (Session(..))
 
 import Views.Layout
 import Views.AboutMe
+
+import qualified Utils.Passwords as Pw
+
+
+hashPath :: FilePath
+hashPath = "./"
 
 
 handlers :: ServerT Pages AppHandler    
@@ -54,13 +62,15 @@ homeHandler =
   
 
 
-loginHandler :: Login -> AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
+loginHandler :: Pw.Login -> AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
 loginHandler login = do
-  liftIO $ putStrLn $ "loging in " ++ show login
-  time <- liftIO getCurrentTime
-  let session = Session time
-  redirectHomeWithSession session
-  
+  loginVerified <- liftIO $ Pw.verifyLogin hashPath login
+  if loginVerified then do
+    time <- liftIO getCurrentTime
+    let session = Session time
+    redirectHomeWithSession session
+  else
+    redirectHomeWithSession ()
 
 
 -- | The “Sign Out” page sets cookies to empty byte string destroyng the data.

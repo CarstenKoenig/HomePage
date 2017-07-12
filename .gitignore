@@ -23,3 +23,6 @@ cabal.project.local
 .dir-locals.el
 .#*
 TAGS
+
+# no hashes
+*.hash
