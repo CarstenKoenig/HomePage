@@ -32,3 +32,9 @@ to redirect I found was throwing errors around
 
 In the end the clue was to create an error with `addSessionToErr` and then
 throw that.
+
+---
+
+Cleaned up a bit - basics are working
+
+**TODO** actuall login form checking a salted/hashed password provided over environment
