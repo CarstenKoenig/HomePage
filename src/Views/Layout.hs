@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Views.Layout
   ( Page (..)
+  , PageContext (..)
   , withLayout
   ) where
 
@@ -11,27 +12,35 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 
-import Control.Monad
+import Control.Monad (forM_)
 import Control.Monad.IO.Class (MonadIO)
 
 import Lucid (Html, Attribute, toHtml, renderText)
 import qualified Lucid.Html5 as H
 import qualified Lucid.Bootstrap as BS
 
-import Control.Monad (forM_)
-
+import Application.Session
 
 data Page =
   Page { additionalStyles :: Maybe Text
-       , title :: Text
-       , content :: Html ()
+       , title       :: Text
+       , content     :: Html ()
        }
 
 
-withLayout :: Page -> Html ()
-withLayout page = do
+data PageContext =
+  PageContext
+  { session     :: Maybe Session
+  , homeLink    :: Text
+  , loginLink   :: Text
+  , logoutLink  :: Text
+  }
+
+
+withLayout :: PageContext -> Page -> Html ()
+withLayout context page = do
   H.doctype_ 
-  H.html_ [ H.lang_ "de" ] $ do
+  H.html_ [ H.lang_ "de" ] $
     H.head_ $ do
       H.link_ [ H.rel_ "shortcut icon", H.href_ "static/favicon.ico" ]
       H.meta_ [ H.charset_ "utf-8" ]
@@ -57,15 +66,15 @@ withLayout page = do
         
       H.body_ $ do
 
-        H.div_ [ H.class_ "blog-masthead" ] $ do
-          BS.container_ $ nav
+        H.div_ [ H.class_ "blog-masthead" ] $
+          BS.container_ $ nav context
       
-        BS.container_ $ do
+        BS.container_ $
           H.div_ [ H.id_ "main", H.role_ "main" ] $ content page
 
         H.footer_ [ H.class_ "blog-footer" ] $ do
-          H.div_ [ H.class_ "col-md-2 text-left" ] $ do
-            H.p_ $ do
+          H.div_ [ H.class_ "col-md-2 text-left" ] $
+            H.p_ $
               H.a_ [ H.href_ "#" ] "nach oben"
           H.div_ [ H.class_ "col-md-8" ] ""
 
@@ -81,10 +90,20 @@ withLayout page = do
           T.empty
 
 
-nav :: Html ()
-nav = do
-  H.nav_ [ H.class_ "blog-nav" ] $ do
-     forM_ [ ("Home", "/") ] $ navItem
+nav :: PageContext -> Html ()
+nav context =
+  H.nav_ [ H.class_ "blog-nav" ] $
+     forM_ (links context) navItem
+
+links :: PageContext -> [(Text, Text)]
+links context =
+  case session context of
+    Nothing -> [ ("Home", homeLink context)
+               , ("Login", loginLink context)
+               ]
+    Just _  -> [ ("Home", homeLink context)
+               , ("Logout", logoutLink context)
+               ]
 
 
 navItem :: (Text,Text) -> Html ()
