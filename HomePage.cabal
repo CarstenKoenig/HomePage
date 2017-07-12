@@ -29,6 +29,7 @@ library
                      , EventSourcing.Events
                      , EventSourcing.EventStore
                      , EventSourcing.Projections
+                     , Utils.Passwords
                      , Views.AboutMe
                      , Views.Index
                      , Views.Layout
@@ -45,6 +46,7 @@ library
                      , free
                      , http-api-data
                      , lucid
+                     , memory
                      , monad-logger
                      , mtl
                      , network-uri
