@@ -102,6 +102,7 @@ loginButton =
   H.a_ [ H.class_ "blog-nav-item"
        , data_ "toggle" "modal"
        , data_ "target" "#DlgLogin"
+       , H.href_ "#"
        ]
     (toHtml ("Login" :: Text))
 
