@@ -7,34 +7,23 @@ module Views.Layout
 
 
 import           Data.Default
-import           Data.Maybe (fromMaybe)
+import           Data.Maybe (fromMaybe, isNothing)
 import           Data.Proxy (Proxy(..))
 import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 
-import Control.Monad (forM_)
+import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (MonadIO)
 
 import Lucid (Html, Attribute, toHtml, renderText)
+import Lucid.Base (makeAttribute)
 import qualified Lucid.Html5 as H
 import qualified Lucid.Bootstrap as BS
 
 
-data Page =
-  Page { additionalStyles :: Maybe Text
-       , title       :: Text
-       , content     :: Html ()
-       }
-
-
-data PageContext s =
-  PageContext
-  { session     :: Maybe s
-  , homeLink    :: Text
-  , loginLink   :: Text
-  , logoutLink  :: Text
-  }
+import Views.Page
+import qualified Views.LoginModal as Login
 
 
 withLayout :: PageContext s -> Page -> Html ()
@@ -66,6 +55,8 @@ withLayout context page = do
         
       H.body_ $ do
 
+        when (isNothing $ session context) (Login.render context "DlgLogin")
+
         H.div_ [ H.class_ "blog-masthead" ] $
           BS.container_ $ nav context
       
@@ -93,17 +84,34 @@ withLayout context page = do
 nav :: PageContext s -> Html ()
 nav context =
   H.nav_ [ H.class_ "blog-nav" ] $
-     forM_ (links context) navItem
+     sequence_ (links context)
 
-links :: PageContext s -> [(Text, Text)]
+links :: PageContext s -> [Html ()]
 links context =
   case session context of
-    Nothing -> [ ("Home", homeLink context)
-               , ("Login", loginLink context)
+    Nothing -> [ navItem ("Home", homeLink context)
+               , loginButton
                ]
-    Just _  -> [ ("Home", homeLink context)
-               , ("Logout", logoutLink context)
+    Just _  -> [ navItem ("Home", homeLink context)
+               , navItem ("Logout", logoutLink context)
                ]
+
+
+loginButton :: Html ()
+loginButton =
+  H.a_ [ H.class_ "blog-nav-item"
+       , data_ "toggle" "modal"
+       , data_ "target" "#DlgLogin"
+       ]
+    (toHtml ("Login" :: Text))
+
+
+data_ :: Text -> Text -> Attribute
+data_ tag = attr_ (T.append "data-" tag)
+
+
+attr_ :: Text -> Text -> Attribute
+attr_ = makeAttribute
 
 
 navItem :: (Text,Text) -> Html ()

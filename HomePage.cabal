@@ -32,6 +32,8 @@ library
                      , Views.AboutMe
                      , Views.Index
                      , Views.Layout
+                     , Views.LoginModal
+                     , Views.Page
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bytestring
@@ -41,6 +43,7 @@ library
                      , data-default
                      , exceptions
                      , free
+                     , http-api-data
                      , lucid
                      , monad-logger
                      , mtl

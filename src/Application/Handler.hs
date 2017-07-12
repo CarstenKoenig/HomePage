@@ -54,8 +54,9 @@ homeHandler =
   
 
 
-loginHandler :: AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
-loginHandler = do
+loginHandler :: Login -> AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
+loginHandler login = do
+  liftIO $ putStrLn $ "loging in " ++ show login
   time <- liftIO getCurrentTime
   let session = Session time
   redirectHomeWithSession session
