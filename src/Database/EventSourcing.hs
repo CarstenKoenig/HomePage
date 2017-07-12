@@ -1,8 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE GADTs,ExistentialQuantification #-}
-{-# LANGUAGE DeriveFunctor, DeriveGeneric #-}
 -- jup Persist needs quite some things
-{-# LANGUAGE TemplateHaskell, QuasiQuotes, TypeFamilies, MultiParamTypeClasses, GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TypeFamilies, MultiParamTypeClasses #-}
 
 module Database.EventSourcing
   ( migrateAll
@@ -93,6 +92,6 @@ rowToEv row =
       rowAggregateId = dbEventAggId entity
       time = dbEventTimestamp entity
       metadata = Metadata time rowNumber rowAggregateId
-  in fmap (\ev -> Event ev metadata) event
+  in fmap (`Event` metadata) event
   where
     decodeJson = Json.decode . LBS.fromStrict
