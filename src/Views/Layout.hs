@@ -1,37 +1,35 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, RecordWildCards #-}
 module Views.Layout
   ( Page (..)
+  , PageContext (..)
   , withLayout
   ) where
 
 
-import Data.Default
-import Data.Maybe (fromMaybe)
-import Data.Text (Text)
+import           Data.Default
+import           Data.Maybe (fromMaybe, isNothing)
+import           Data.Proxy (Proxy(..))
+import           Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 
-import Control.Monad
+import Control.Monad (forM_, when)
 import Control.Monad.IO.Class (MonadIO)
 
 import Lucid (Html, Attribute, toHtml, renderText)
+import Lucid.Base (makeAttribute)
 import qualified Lucid.Html5 as H
 import qualified Lucid.Bootstrap as BS
 
-import Control.Monad (forM_)
+
+import Views.Page
+import qualified Views.LoginModal as Login
 
 
-data Page =
-  Page { additionalStyles :: Maybe Text
-       , title :: Text
-       , content :: Html ()
-       }
-
-
-withLayout :: Page -> Html ()
-withLayout page = do
+withLayout :: PageContext s -> Page -> Html ()
+withLayout context page = do
   H.doctype_ 
-  H.html_ [ H.lang_ "de" ] $ do
+  H.html_ [ H.lang_ "de" ] $
     H.head_ $ do
       H.link_ [ H.rel_ "shortcut icon", H.href_ "static/favicon.ico" ]
       H.meta_ [ H.charset_ "utf-8" ]
@@ -57,15 +55,17 @@ withLayout page = do
         
       H.body_ $ do
 
-        H.div_ [ H.class_ "blog-masthead" ] $ do
-          BS.container_ $ nav
+        when (isNothing $ session context) (Login.render context "DlgLogin")
+
+        H.div_ [ H.class_ "blog-masthead" ] $
+          BS.container_ $ nav context
       
-        BS.container_ $ do
+        BS.container_ $
           H.div_ [ H.id_ "main", H.role_ "main" ] $ content page
 
         H.footer_ [ H.class_ "blog-footer" ] $ do
-          H.div_ [ H.class_ "col-md-2 text-left" ] $ do
-            H.p_ $ do
+          H.div_ [ H.class_ "col-md-2 text-left" ] $
+            H.p_ $
               H.a_ [ H.href_ "#" ] "nach oben"
           H.div_ [ H.class_ "col-md-8" ] ""
 
@@ -81,10 +81,37 @@ withLayout page = do
           T.empty
 
 
-nav :: Html ()
-nav = do
-  H.nav_ [ H.class_ "blog-nav" ] $ do
-     forM_ [ ("Home", "/") ] $ navItem
+nav :: PageContext s -> Html ()
+nav context =
+  H.nav_ [ H.class_ "blog-nav" ] $
+     sequence_ (links context)
+
+links :: PageContext s -> [Html ()]
+links context =
+  case session context of
+    Nothing -> [ navItem ("Home", homeLink context)
+               , loginButton
+               ]
+    Just _  -> [ navItem ("Home", homeLink context)
+               , navItem ("Logout", logoutLink context)
+               ]
+
+
+loginButton :: Html ()
+loginButton =
+  H.a_ [ H.class_ "blog-nav-item"
+       , data_ "toggle" "modal"
+       , data_ "target" "#DlgLogin"
+       ]
+    (toHtml ("Login" :: Text))
+
+
+data_ :: Text -> Text -> Attribute
+data_ tag = attr_ (T.append "data-" tag)
+
+
+attr_ :: Text -> Text -> Attribute
+attr_ = makeAttribute
 
 
 navItem :: (Text,Text) -> Html ()

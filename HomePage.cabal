@@ -16,6 +16,12 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Application
+                     , Application.Auth
+                     , Application.Context
+                     , Application.Handler
+                     , Application.HandlerMonad
+                     , Application.Routing
+                     , Application.Session
                      , Database
                      , Database.EventSourcing
                      , Database.Model
@@ -26,17 +32,26 @@ library
                      , Views.AboutMe
                      , Views.Index
                      , Views.Layout
+                     , Views.LoginModal
+                     , Views.Page
   build-depends:       base >= 4.7 && < 5
                      , aeson
                      , bytestring
+                     , cereal
                      , containers
+                     , cryptonite
                      , data-default
+                     , exceptions
                      , free
+                     , http-api-data
                      , lucid
                      , monad-logger
+                     , mtl
+                     , network-uri
                      , persistent
                      , persistent-template
                      , resourcet
+                     , servant-auth-cookie
                      , servant-lucid
                      , servant-server
                      , text
@@ -53,9 +68,11 @@ executable HomePage-exe
   build-depends:       base
                      , HomePage
                      , aeson
+                     , cryptonite
                      , text
                      , persistent
                      , persistent-sqlite
+                     , servant-auth-cookie
   default-language:    Haskell2010
 
 test-suite HomePage-test

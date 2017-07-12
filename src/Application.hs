@@ -1,59 +1,51 @@
-{-# LANGUAGE DataKinds       #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeOperators   #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GADTs             #-}
+{-# LANGUAGE TypeFamilies      #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE DataKinds         #-}
+{-# LANGUAGE TypeOperators     #-}
 module Application
     ( startApp
-    , app
+    , AuthCookieSettings (..)
+    , AppContext (..)
+    , AuthSettings (..)
+    , BaseUri (..)
     ) where
 
-import Data.Aeson
-import Data.Aeson.TH
 
 import Network.Wai
 import Network.Wai.Handler.Warp
 
 import Servant
-import Servant.HTML.Lucid (HTML)
-import Servant.Utils.StaticFiles (serveDirectory)
 
-import Lucid (Html)
-
-import Views.Layout (Page, withLayout)
-import Views.AboutMe
-import Views.Index
-
-data User = User
-  { userId        :: Int
-  , userFirstName :: String
-  , userLastName  :: String
-  } deriving (Eq, Show)
-
-$(deriveJSON defaultOptions ''User)
-
-type API
-  = "users" :> Get '[JSON] [User]
-  :<|> "static" :> Raw
-  :<|> Get '[HTML] (Html ())
+import Application.Auth (AuthHandler, cookieAuthCheck)
+import Application.Context
+import Application.Handler (handlers)
+import Application.HandlerMonad (appHandlerToHandler)
+import Application.Session (Session)
+import Application.Routing (Routes)
 
 
-startApp :: IO ()
-startApp = run 8080 app
-
-app :: Application
-app = serve api server
-
-api :: Proxy API
-api = Proxy
+startApp :: AppContext -> IO ()
+startApp context = do
+  let port = baseUriPort (appContextBaseUri context)
+  run port $ app context
 
 
-server :: Server API
-server =
-  return users
-  :<|> serveDirectory "static"
-  :<|> return (withLayout Views.AboutMe.page)
+app :: AppContext -> Application
+app appContext@AppContext {..} =
+  serveWithContext
+     (Proxy :: Proxy Routes)
+     (
+       (cookieAuthCheck
+         (authCookieSettings appContextAuthSettings)
+         (authServerKey appContextAuthSettings)
+         :: AuthHandler Request (Maybe Session))
+       :. EmptyContext)
+     (server appContext)
 
 
-users :: [User]
-users = [ User 1 "Isaac" "Newton"
-        , User 2 "Albert" "Einstein"
-        ]
+server :: AppContext -> Server Routes
+server context =
+  serveDirectory "static"
+  :<|> enter (appHandlerToHandler context) handlers
