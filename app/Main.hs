@@ -32,7 +32,7 @@ main = do
   randomSource <- mkRandomSource drgNew 2000
   serverKey    <- mkServerKey 16 (Just $ fromIntegral (86400 :: Integer))
   let authCookieSettings = AuthCookieSettings
-        { acsSessionField = "Session"
+        { acsSessionField = "http://carsten-koenig.net/session-cookie"
         , acsCookieFlags  = ["HttpOnly"]
         , acsMaxAge       = fromIntegral (6 * 3600 :: Integer)
         , acsExpirationFormat = "%0Y%m%d%H%M%S"
