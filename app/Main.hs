@@ -21,8 +21,10 @@ import Application
 import EventSourcing
 import Database
 
+
 hashPath :: FilePath
 hashPath = "./hashes/"
+
 
 main :: IO ()
 main = do
