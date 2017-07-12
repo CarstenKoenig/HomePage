@@ -20,6 +20,7 @@ import Servant.Server.Experimental.Auth.Cookie
 data AppContext = AppContext
   { appContextAuthSettings :: AuthSettings
   , appContextBaseUri      :: BaseUri
+  , appContextHashFilePath :: FilePath
   }
 
 

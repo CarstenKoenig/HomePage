@@ -38,15 +38,12 @@ import Servant.Server.Experimental.Auth.Cookie
 import Application.HandlerMonad
 import Application.Routing
 import Application.Session (Session(..))
+import Application.Context
 
 import Views.Layout
 import Views.AboutMe
 
 import qualified Utils.Passwords as Pw
-
-
-hashPath :: FilePath
-hashPath = "./"
 
 
 handlers :: ServerT Pages AppHandler    
@@ -64,6 +61,7 @@ homeHandler =
 
 loginHandler :: Pw.Login -> AppHandler (Headers '[Header "set-cookie" EncryptedSession] (Html ()))
 loginHandler login = do
+  hashPath <- asks appContextHashFilePath
   loginVerified <- liftIO $ Pw.verifyLogin hashPath login
   if loginVerified then do
     time <- liftIO getCurrentTime

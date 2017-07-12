@@ -21,6 +21,9 @@ import Application
 import EventSourcing
 import Database
 
+hashPath :: FilePath
+hashPath = "./hashes/"
+
 main :: IO ()
 main = do
   let appPort = 8080
@@ -47,7 +50,7 @@ main = do
         , baseUriPort      = appPort
         , baseUriScheme    = "http:"
         }
-      appContext = AppContext authSettings baseUri
+      appContext = AppContext authSettings baseUri hashPath
   startApp appContext
 
 
