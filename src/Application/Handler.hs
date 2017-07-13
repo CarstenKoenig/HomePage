@@ -21,6 +21,7 @@ import           Control.Monad.Except
 import           Control.Monad.Reader
 import           Control.Monad.Trans.Except (throwE, catchE)
 
+import           Data.Aeson (FromJSON, ToJSON)
 import           Data.Serialize hiding (Get)
 import           Data.Text (Text)
 import qualified Data.Text          as T
@@ -42,11 +43,14 @@ import Application.Routing
 import Application.Session (Session(..))
 import Application.Context
 
+import EventSourcing.EventStore (EventStream)
+
 import Views.Layout
 import Views.AboutMe
 import Views.ShowBlogPost
 
 import Models.Blog
+import Models.Events (AppEvent)
 
 import qualified Utils.Passwords as Pw
 
@@ -117,6 +121,16 @@ withSession
   -> (Session -> AppHandler a) -- ^ Callback making use of 'Session'
   -> AppHandler a
 withSession ms action = maybe (throwError err403) action ms
+
+
+-- | run an computation on an Eventstream
+
+runEventStream :: EventStream AppEvent res -> AppHandler res
+runEventStream comp = do
+  context <- ask
+  liftIO $ appContextRunEventStream context comp
+
+
 
 
 -- | shows a page

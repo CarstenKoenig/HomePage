@@ -20,14 +20,18 @@ import Data.Aeson (FromJSON, ToJSON)
 import Servant.Server.Experimental.Auth.Cookie
 
 import EventSourcing
+import Models.Events (AppEvent)
 
+
+-- | The application's context.
+-- includes settings for the session encryption
+-- and values needed to render routes
 
 data AppContext = AppContext
   { appContextAuthSettings   :: AuthSettings
   , appContextBaseUri        :: BaseUri
   , appContextHashFilePath   :: FilePath
-  , appContextRunEventStream :: forall ev res . (FromJSON ev, ToJSON ev)
-                             => EventStream ev res -> IO res
+  , appContextRunEventStream :: forall res . EventStream AppEvent res -> IO res
   }
 
 

@@ -48,9 +48,6 @@ appHandlerToHandler :: AppContext -> AppHandler :~> Handler
 appHandlerToHandler context =
   Nat $ flip runReaderT context  
 
--- | The application's context.
--- includes settings for the session encryption
--- and values needed to render routes
 
 addSessionFromContext
   :: (AddHeader e EncryptedSession s r, Serialize a,

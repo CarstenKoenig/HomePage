@@ -32,6 +32,7 @@ library
                      , Models.Blog
                      , Models.Blog.Post
                      , Models.Blog.Types
+                     , Models.Events
                      , Utils.Passwords
                      , Views.AboutMe
                      , Views.Index
