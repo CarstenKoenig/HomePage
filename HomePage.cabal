@@ -61,6 +61,7 @@ library
                      , persistent
                      , persistent-template
                      , resourcet
+                     , resource-pool
                      , servant-auth-cookie
                      , servant-lucid
                      , servant-server
@@ -80,9 +81,11 @@ executable HomePage-exe
                      , HomePage
                      , aeson
                      , cryptonite
-                     , text
+                     , monad-logger
                      , persistent
                      , persistent-sqlite
+                     , resourcet
+                     , text
                      , servant-auth-cookie
   default-language:    Haskell2010
 

@@ -66,3 +66,14 @@ For now it's just another route `/blog` that shows a static demo entry
 ---
 
 **todo** event-handler and blogpost index / route for month/title
+
+### setup sql pool
+All the lib-internal stuff is only using persistent-sql (so no dependency on
+either Sqlite or Postgres).
+
+The `AppContext` now includes an additonal field that allowes to run `EventStream`
+queries into an `IO` action and the `app/Main` uses a local Sqlite `database.db`
+database as target.
+
+The pool is setup to allow right now 5 connections.
+

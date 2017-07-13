@@ -2,6 +2,10 @@
 
 module Main where
 
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.Logger (runNoLoggingT)
+import           Control.Monad.Trans.Resource (runResourceT)
+
 import           Crypto.Hash (SHA256)
 import           Crypto.Cipher.Types (ctrCombine)
 import           Crypto.Cipher.AES (AES256)
@@ -11,8 +15,8 @@ import           Data.Aeson (ToJSON(..),FromJSON(..))
 import           Data.Proxy (Proxy(..))
 import           Data.Text (Text)
 
-import           Database.Persist.Sql (runMigration)
-import           Database.Persist.Sqlite (runSqlite)
+import           Database.Persist.Sql (runMigration, runSqlPool)
+import           Database.Persist.Sqlite (withSqlitePool)
 
 import           Servant.Server.Experimental.Auth.Cookie (mkRandomSource, mkServerKey)
 
@@ -24,6 +28,9 @@ import Database
 
 hashPath :: FilePath
 hashPath = "./hashes/"
+
+localDb :: Text
+localDb = "./database.db"
 
 
 main :: IO ()
@@ -52,17 +59,18 @@ main = do
         , baseUriPort      = appPort
         , baseUriScheme    = "http:"
         }
-      appContext = AppContext authSettings baseUri hashPath
-  startApp appContext
 
+  -- using 5 database connections in pool
+  runNoLoggingT $ withSqlitePool localDb 5 $ \ pool -> do
+      let appContext =
+            AppContext authSettings baseUri hashPath (runEventStreamAction pool)
+      -- do database migration
+      runSqlPool (runMigration migrateAll) pool
+      -- and start the application
+      liftIO $ startApp appContext
 
-runInSqlite :: (ToJSON ev, FromJSON ev) => Text -> EventStream ev res -> IO res
-runInSqlite connection query =
-  runSqlite connection $ do
-    runMigration migrateAll
-    runStream query
-
-
-dbConnection :: Text
-dbConnection = "events.db"
+  where
+    runEventStreamAction pool query =
+      runResourceT . runNoLoggingT $
+      runSqlPool (runStream query) pool
 

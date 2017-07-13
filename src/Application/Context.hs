@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE DataKinds            #-}
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE FlexibleContexts     #-}
@@ -14,13 +15,19 @@ module Application.Context
   , BaseUri (..)
   ) where
 
+
+import Data.Aeson (FromJSON, ToJSON)
 import Servant.Server.Experimental.Auth.Cookie
+
+import EventSourcing
 
 
 data AppContext = AppContext
-  { appContextAuthSettings :: AuthSettings
-  , appContextBaseUri      :: BaseUri
-  , appContextHashFilePath :: FilePath
+  { appContextAuthSettings   :: AuthSettings
+  , appContextBaseUri        :: BaseUri
+  , appContextHashFilePath   :: FilePath
+  , appContextRunEventStream :: forall ev res . (FromJSON ev, ToJSON ev)
+                             => EventStream ev res -> IO res
   }
 
 

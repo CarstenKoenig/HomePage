@@ -39,7 +39,7 @@ import           EventSourcing
 import           Database.Model
 
 ----------------------------------------------------------------------
--- interpret using a Persistent-Sqlite database
+-- interpret using a Persistent database
 
 type SqlStore ev = ReaderT SqlBackend (NoLoggingT (ResourceT IO))
 
