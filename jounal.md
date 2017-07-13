@@ -37,4 +37,32 @@ throw that.
 
 Cleaned up a bit - basics are working
 
-**TODO** actuall login form checking a salted/hashed password provided over environment
+**DONE** actuall login form checking a salted/hashed password provided over environment
+is now included
+
+
+## 13.06.
+
+### add data-types and events
+Added types and events for blog-post related items in `src/Models/Blog/*`.
+
+For now a blog-post is just
+
+- a title
+- a optional publish-time
+- a list of categories (just text-items)
+- a content (`Markdown`)
+
+Events just mirrow those fields (added/removed for categories)
+
+I also added a `blogPostP` projection
+
+### render blog posts
+I copied the necessary parts from my older blog projects and had some fun with
+CSS styling of the blog-post titles.
+
+For now it's just another route `/blog` that shows a static demo entry
+
+---
+
+**todo** event-handler and blogpost index / route for month/title

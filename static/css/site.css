@@ -111,10 +111,10 @@ h6, .h6 {
 }
 
 .blog-title {
-  margin-top: 30px;
-  margin-bottom: 0;
   font-size: 60px;
   font-weight: normal;
+  margin-top: 30px;
+  margin-bottom: 0px;
 }
 
 .blog-description {
@@ -133,7 +133,15 @@ h6, .h6 {
 
 .blog-post-title {
   margin-bottom: 5px;
-  font-size: 40px;
+  font-size: 3.5em;
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: bold;
+  color: #444;
+  background-color: #fcfcfc;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-color: #444;
+  
 }
 
 .blog-post-meta {

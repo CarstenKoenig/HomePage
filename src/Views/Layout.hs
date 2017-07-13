@@ -26,8 +26,9 @@ import Views.Page
 import qualified Views.LoginModal as Login
 
 
-withLayout :: PageContext s -> Page -> Html ()
-withLayout context page = do
+withLayout :: PageContext s -> (PageContext s -> Page) -> Html ()
+withLayout context mkPage = do
+  let page = mkPage context
   H.doctype_ 
   H.html_ [ H.lang_ "de" ] $
     H.head_ $ do
@@ -85,6 +86,7 @@ nav :: PageContext s -> Html ()
 nav context =
   H.nav_ [ H.class_ "blog-nav" ] $
      sequence_ (links context)
+
 
 links :: PageContext s -> [Html ()]
 links context =

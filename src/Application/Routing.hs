@@ -33,12 +33,18 @@ type Routes
 
 type Pages 
   = GetHomeR
+  :<|> GetBlogR
   :<|> GetLoginR
   :<|> GetLogoutR
   
 
 type GetHomeR =
   AppAuth :> Get '[HTML] (Html ())
+
+
+type GetBlogR =
+  AppAuth :> "blog" :>
+  Get '[HTML] (Html ())
 
 
 type GetLoginR =
@@ -48,8 +54,7 @@ type GetLoginR =
 
 
 type GetLogoutR =
-  AppAuth :>
-  "logout" :>
+  AppAuth :> "logout" :>
   Get '[HTML] (Headers '[Header "set-cookie" EncryptedSession] (Html()))  
 
 

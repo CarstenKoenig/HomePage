@@ -25,15 +25,17 @@ import           Data.Serialize hiding (Get)
 import           Data.Text (Text)
 import qualified Data.Text          as T
 import qualified Data.Text.Encoding as T
-import           Data.Time (UTCTime, getCurrentTime)
+import           Data.Time (UTCTime, getCurrentTime, getCurrentTimeZone)
 
+import           Lucid (Html)
+
+import           Text.Markdown (Markdown(..))
+
+import           Servant
+import           Servant.HTML.Lucid
+import           Servant.Server.Experimental.Auth
+import           Servant.Server.Experimental.Auth.Cookie
 import           System.Directory (doesFileExist)
-
-import Lucid (Html)
-import Servant
-import Servant.HTML.Lucid
-import Servant.Server.Experimental.Auth
-import Servant.Server.Experimental.Auth.Cookie
 
 import Application.HandlerMonad
 import Application.Routing
@@ -42,6 +44,9 @@ import Application.Context
 
 import Views.Layout
 import Views.AboutMe
+import Views.ShowBlogPost
+
+import Models.Blog
 
 import qualified Utils.Passwords as Pw
 
@@ -49,6 +54,7 @@ import qualified Utils.Passwords as Pw
 handlers :: ServerT Pages AppHandler    
 handlers =
   homeHandler
+  :<|> blogHandler
   :<|> loginHandler
   :<|> logoutHandler
 
@@ -56,6 +62,15 @@ handlers =
 homeHandler :: Maybe Session -> AppHandler (Html ())
 homeHandler =
   showPageHandler Views.AboutMe.page
+
+
+blogHandler :: Maybe Session -> AppHandler (Html ())
+blogHandler =
+  showPageHandler (Views.ShowBlogPost.page demoPost)
+  where
+    demoPost = BlogPost (Markdown demoContent) "Demo Post" Nothing demoCats
+    demoContent = "#Hello World\n\n- some\n- points"
+    demoCats = [ Category "Demo" ]
   
 
 
@@ -105,7 +120,7 @@ withSession ms action = maybe (throwError err403) action ms
 
 
 -- | shows a page
-showPageHandler :: Page -> Maybe Session -> AppHandler (Html ())
+showPageHandler :: (PageContext Session -> Page) -> Maybe Session -> AppHandler (Html ())
 showPageHandler page session = do
   context <- mkPageContext session
   return (withLayout context page)
@@ -117,6 +132,7 @@ mkPageContext
   :: Maybe s                    -- ^ Active 'Session' if any
   -> AppHandler (PageContext s) -- ^ The resulting view
 mkPageContext session = do
+  timezone   <- liftIO getCurrentTimeZone
   homeLink   <- routeToText (Proxy :: Proxy GetHomeR)
   loginLink  <- routeToText (Proxy :: Proxy GetLoginR)
   logoutLink <- routeToText (Proxy :: Proxy GetLogoutR)

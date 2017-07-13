@@ -13,29 +13,29 @@ import Lucid (Html, toHtml)
 import qualified Lucid.Html5 as H
 import qualified Lucid.Bootstrap as BS
 
-import Views.Layout (Page (Page))
+import Views.Layout (Page (Page), PageContext)
 
 
-page :: Page
-page = Page Nothing "about me" content
+page :: PageContext s -> Page
+page _ = Page Nothing "about me" content
 
 
 content :: Html ()
-content = do
+content =
   H.div_ [ H.id_ "aboutMe"] $ do
     BS.row_ $ do
       col_ 2 ""
-      col_ 4 $ do
-        H.div_ [ H.class_ "caption" ] $ do
+      col_ 4 $
+        H.div_ [ H.class_ "caption" ] $
           H.h2_ [ H.class_ "text-right" ] "Carsten König"
       col_ 6 ""
 
     BS.row_ $ do
       col_ 2 ""
-      col_ 4 $ do
-        H.div_ [ H.class_ "thumbnail" ] $ do
+      col_ 4 $
+        H.div_ [ H.class_ "thumbnail" ] $
           H.img_ [ H.src_ "static/images/carsten.jpg", H.alt_ "Carsten König" ]
-      col_ 4 $ do
+      col_ 4 $
         H.dl_ [ H.class_ "dl-horizontal" ] $ do
           H.dt_ "email:"
           H.dd_ $ H.a_ [ H.href_ "mailto://Carsten.Koenig@hotmail.de" ] "Carsten.Koenig@hotmail.de"
