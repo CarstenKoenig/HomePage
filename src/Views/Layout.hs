@@ -67,7 +67,7 @@ withLayout context mkPage = do
         H.footer_ [ H.class_ "blog-footer" ] $ do
           H.div_ [ H.class_ "col-md-2 text-left" ] $
             H.p_ $
-              H.a_ [ H.href_ "#" ] "nach oben"
+              H.a_ [ H.href_ "#" ] "top"
           H.div_ [ H.class_ "col-md-8" ] ""
 
         -- JQuery
