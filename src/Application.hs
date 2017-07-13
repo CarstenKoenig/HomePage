@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeOperators     #-}
 module Application
     ( startApp
+    , app
     , AuthCookieSettings (..)
     , AppContext (..)
     , AuthSettings (..)
