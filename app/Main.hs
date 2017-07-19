@@ -63,7 +63,7 @@ main = do
   -- using 5 database connections in pool
   runNoLoggingT $ withSqlitePool localDb 5 $ \ pool -> do
       let appContext =
-            AppContext authSettings baseUri hashPath (runEventStreamAction pool)
+            AppContext authSettings baseUri hashPath pool
       -- do database migration
       runSqlPool (runMigration migrateAll) pool
       -- and start the application

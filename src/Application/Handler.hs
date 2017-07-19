@@ -38,6 +38,7 @@ import           Servant.Server.Experimental.Auth
 import           Servant.Server.Experimental.Auth.Cookie
 import           System.Directory (doesFileExist)
 
+
 import Application.HandlerMonad
 import Application.Routing
 import Application.Session (Session(..))
@@ -51,6 +52,9 @@ import Views.ShowBlogPost
 
 import Models.Blog
 import Models.Events (AppEvent)
+
+import Database.Model (SqlQuery, runSqlQuery)
+import Database.EventSourcing (runStream)
 
 import qualified Utils.Passwords as Pw
 
@@ -126,11 +130,13 @@ withSession ms action = maybe (throwError err403) action ms
 -- | run an computation on an Eventstream
 
 runEventStream :: EventStream AppEvent res -> AppHandler res
-runEventStream comp = do
-  context <- ask
-  liftIO $ appContextRunEventStream context comp
+runEventStream = runSql . runStream
 
 
+runSql :: SqlQuery res -> AppHandler res
+runSql query = do
+  pool <- asks appContextSqlPool
+  liftIO $ runSqlQuery pool query
 
 
 -- | shows a page

@@ -41,10 +41,7 @@ import           Database.Model
 ----------------------------------------------------------------------
 -- interpret using a Persistent database
 
-type SqlStore ev = ReaderT SqlBackend (NoLoggingT (ResourceT IO))
-
-
-runStream :: (ToJSON ev, FromJSON ev) => EventStream ev res -> SqlStore ev res
+runStream :: (ToJSON ev, FromJSON ev) => EventStream ev res -> SqlQuery res
 runStream query = do
   time <- liftIO getCurrentTime
   MF.iterM (interpretPersistent time) query
@@ -55,7 +52,7 @@ runStream query = do
 
 interpretPersistent
   :: (ToJSON ev, FromJSON ev) =>
-     UTCTime -> EventStreamF ev (SqlStore ev res) -> SqlStore ev res
+     UTCTime -> EventStreamF ev (SqlQuery res) -> SqlQuery res
      
 interpretPersistent time (NewAggregate cont) = do
   id <- next . map (dbEventAggId . Sql.entityVal)

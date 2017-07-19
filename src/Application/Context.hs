@@ -19,6 +19,9 @@ module Application.Context
 import Data.Aeson (FromJSON, ToJSON)
 import Servant.Server.Experimental.Auth.Cookie
 
+import Data.Pool (Pool)
+import Database.Persist.Sql (SqlBackend)
+
 import EventSourcing
 import Models.Events (AppEvent)
 
@@ -31,7 +34,7 @@ data AppContext = AppContext
   { appContextAuthSettings   :: AuthSettings
   , appContextBaseUri        :: BaseUri
   , appContextHashFilePath   :: FilePath
-  , appContextRunEventStream :: forall res . EventStream AppEvent res -> IO res
+  , appContextSqlPool        :: Pool SqlBackend
   }
 
 
