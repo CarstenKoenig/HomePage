@@ -37,9 +37,3 @@ DbEvent
 
 
 type SqlQuery res = ReaderT SqlBackend (NoLoggingT (ResourceT IO)) res
-  
-
-runSqlQuery :: Pool SqlBackend -> SqlQuery res -> IO res
-runSqlQuery pool query =
-  runResourceT . runNoLoggingT $
-    runSqlPool query pool

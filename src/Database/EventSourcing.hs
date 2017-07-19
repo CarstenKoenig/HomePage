@@ -4,8 +4,7 @@
 {-# LANGUAGE TypeFamilies, MultiParamTypeClasses #-}
 
 module Database.EventSourcing
-  ( migrateAll
-  , runStream
+  ( runStream
   ) where
 
 import           Control.Monad.Free (Free)

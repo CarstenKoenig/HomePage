@@ -53,8 +53,7 @@ import Views.ShowBlogPost
 import Models.Blog
 import Models.Events (AppEvent)
 
-import Database.Model (SqlQuery, runSqlQuery)
-import Database.EventSourcing (runStream)
+import Database (SqlQuery, runSqlQuery, runStream)
 
 import qualified Utils.Passwords as Pw
 
